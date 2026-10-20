@@ -17,8 +17,6 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            overflow: hidden;
-            touch-action: none;
         }
 
         h1 {
@@ -73,7 +71,6 @@
             justify-content: center;
         }
 
-        /* Keyboard Arrow key jaisa look */
         .arrow-key {
             width: 55px;
             height: 50px;
@@ -94,19 +91,11 @@
             transition: all 0.05s ease;
         }
 
-        /* Click hone par daba hua effect */
         .arrow-key:active {
             transform: translateY(3px);
             box-shadow: 0 1px 0 #996600, 0 0 15px #ffaa00;
             background: #ffaa00;
             color: #0d111d;
-        }
-
-        /* Beech mein gap/space dene ke liye khali block */
-        .empty-space {
-            width: 55px;
-            height: 50px;
-            margin: 4px;
         }
 
         .credits {
@@ -121,7 +110,7 @@
 <body>
 
     <h1>🍁 Chinar Snake Game</h1>
-    <p>Kashmiri web development</p>
+    <p>PC: Keyboard Arrow Keys | Mobile/Mouse: Screen Buttons</p>
     
     <div class="game-info">
         <h2 id="scoreBoard">Score: 0</h2>
@@ -129,7 +118,7 @@
 
     <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-    <!-- Professional Arrow Keypad Layout (For Mobile & PC click) -->
+    <!-- Keypad Layout -->
     <div class="keypad-container">
         <div class="keypad-row">
             <div class="arrow-key" id="keyUp">▲</div>
@@ -156,7 +145,7 @@
         let score = 0;
         let d = "RIGHT"; 
 
-        // 1. Keyboard Controls (PC ke liye)
+        // 1. Fixed PC Keyboard Controls
         document.addEventListener("keydown", direction);
         function direction(event) {
             if (event.keyCode == 37 && d != "RIGHT") d = "LEFT";
@@ -165,17 +154,23 @@
             else if (event.keyCode == 40 && d != "UP") d = "DOWN";
         }
 
-        // 2. Android Mobile Controls (Touch Support)
-        document.getElementById("keyUp").addEventListener("touchstart", (e) => { e.preventDefault(); if(d != "DOWN") d = "UP"; });
-        document.getElementById("keyDown").addEventListener("touchstart", (e) => { e.preventDefault(); if(d != "UP") d = "DOWN"; });
-        document.getElementById("keyLeft").addEventListener("touchstart", (e) => { e.preventDefault(); if(d != "RIGHT") d = "LEFT"; });
-        document.getElementById("keyRight").addEventListener("touchstart", (e) => { e.preventDefault(); if(d != "LEFT") d = "RIGHT"; });
+        // Functions to change directions safely
+        function moveUp() { if(d != "DOWN") d = "UP"; }
+        function moveDown() { if(d != "UP") d = "DOWN"; }
+        function moveLeft() { if(d != "RIGHT") d = "LEFT"; }
+        function moveRight() { if(d != "LEFT") d = "RIGHT"; }
+
+        // 2. Fixed Mobile Touch Controls
+        document.getElementById("keyUp").addEventListener("touchstart", (e) => { moveUp(); });
+        document.getElementById("keyDown").addEventListener("touchstart", (e) => { moveDown(); });
+        document.getElementById("keyLeft").addEventListener("touchstart", (e) => { moveLeft(); });
+        document.getElementById("keyRight").addEventListener("touchstart", (e) => { moveRight(); });
         
-        // 3. PC Mouse Click Controls (PC Mouse click ke liye)
-        document.getElementById("keyUp").addEventListener("click", () => { if(d != "DOWN") d = "UP"; });
-        document.getElementById("keyDown").addEventListener("click", () => { if(d != "UP") d = "DOWN"; });
-        document.getElementById("keyLeft").addEventListener("click", () => { if(d != "RIGHT") d = "LEFT"; });
-        document.getElementById("keyRight").addEventListener("click", () => { if(d != "LEFT") d = "RIGHT"; });
+        // 3. PC Mouse Click Controls
+        document.getElementById("keyUp").addEventListener("click", moveUp);
+        document.getElementById("keyDown").addEventListener("click", moveDown);
+        document.getElementById("keyLeft").addEventListener("click", moveLeft);
+        document.getElementById("keyRight").addEventListener("click", moveRight);
 
         function collision(head, array) {
             for (let i = 0; i < array.length; i++) {
@@ -213,6 +208,7 @@
             ctx.fillStyle = "#0d111d";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Fixed Snake Rendering Bug
             for (let i = 0; i < snake.length; i++) {
                 if (i == 0) {
                     ctx.fillStyle = "#00ffcc"; 
@@ -231,8 +227,8 @@
             drawChinarLeaf(food.x, food.y, box);
             ctx.shadowBlur = 0; 
 
-            let snakeX = snake.x;
-            let snakeY = snake.y;
+            let snakeX = snake[0].x; // Fixed array reference bug
+            let snakeY = snake[0].y;
 
             if (d == "LEFT") snakeX -= box;
             if (d == "UP") snakeY -= box;
