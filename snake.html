@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chinar Snake Game</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #111424, #060913);
+            color: #fff;
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: #ffaa00; /* Warm Autumn Glow */
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5), 0 0 20px rgba(255, 170, 0, 0.2);
+            font-weight: 700;
+        }
+
+        p {
+            color: #8a99ad;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .game-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 40px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        #scoreBoard {
+            font-size: 1.8rem;
+            margin: 0;
+            color: #ff4500; /* Chinar Autumn Red/Orange */
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+        }
+
+        canvas {
+            background-color: #0d111d;
+            display: block;
+            border-radius: 12px;
+            border: 3px solid #ffaa00;
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.2), inset 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        /* Credits section at the bottom */
+        .credits {
+            margin-top: 25px;
+            font-size: 1.1rem;
+            color: #00ffcc;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🍁 Chinar Snake Game</h1>
+    <p>Arrow Keys ka use karke snake ko Chinar Leaf khilayein</p>
+    
+    <div class="game-info">
+        <h2 id="scoreBoard">Score: 0</h2>
+    </div>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <!-- Aapka signature credit -->
+    <div class="credits">Designed by Aabid Hussain</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const box = 20; 
+        let snake = [{ x: 10 * box, y: 10 * box }]; 
+        let food = {
+            x: Math.floor(Math.random() * 20) * box,
+            y: Math.floor(Math.random() * 20) * box
+        };
+        let score = 0;
+        let d = "RIGHT"; 
+
+        document.addEventListener("keydown", direction);
+        function direction(event) {
+            if (event.keyCode == 37 && d != "RIGHT") d = "LEFT";
+            else if (event.keyCode == 38 && d != "DOWN") d = "UP";
+            else if (event.keyCode == 39 && d != "LEFT") d = "RIGHT";
+            else if (event.keyCode == 40 && d != "UP") d = "DOWN";
+        }
+
+        function collision(head, array) {
+            for (let i = 0; i < array.length; i++) {
+                if (head.x == array[i].x && head.y == array[i].y) return true;
+            }
+            return false;
+        }
+
+        // Chinar Leaf (Patti) draw karne ka function
+        function drawChinarLeaf(x, y, size) {
+            ctx.save();
+            ctx.translate(x + size / 2, y + size / 2);
+            ctx.fillStyle = "#ff4500"; // Autumn Orange-Red Color
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#ff4500";
+
+            ctx.beginPath();
+            // Center main tip
+            ctx.moveTo(0, -size / 2);
+            // Right lobes
+            ctx.lineTo(size / 4, -size / 4);
+            ctx.lineTo(size / 2, -size / 6);
+            ctx.lineTo(size / 3, size / 8);
+            ctx.lineTo(size / 2, size / 3);
+            ctx.lineTo(size / 6, size / 4);
+            // Stem (Dandi)
+            ctx.lineTo(0, size / 2); 
+            // Left lobes
+            ctx.lineTo(-size / 6, size / 4);
+            ctx.lineTo(-size / 2, size / 3);
+            ctx.lineTo(-size / 3, size / 8);
+            ctx.lineTo(-size / 2, -size / 6);
+            ctx.lineTo(-size / 4, -size / 4);
+            
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.fillStyle = "#0d111d";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Snake drawing
+            for (let i = 0; i < snake.length; i++) {
+                if (i == 0) {
+                    ctx.fillStyle = "#00ffcc"; 
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = "#00ffcc";
+                } else {
+                    ctx.fillStyle = "#00b3ff"; 
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = "#00b3ff";
+                }
+                
+                ctx.beginPath();
+                ctx.roundRect(snake[i].x + 1, snake[i].y + 1, box - 2, box - 2, 5);
+                ctx.fill();
+            }
+
+            // Ball ki jagah Chinar Leaf draw karna
+            drawChinarLeaf(food.x, food.y, box);
+            
+            ctx.shadowBlur = 0; // Reset glow
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if (d == "LEFT") snakeX -= box;
+            if (d == "UP") snakeY -= box;
+            if (d == "RIGHT") snakeX += box;
+            if (d == "DOWN") snakeY += box;
+
+            if (snakeX < 0) snakeX = canvas.width - box;
+            if (snakeX >= canvas.width) snakeX = 0;
+            if (snakeY < 0) snakeY = canvas.height - box;
+            if (snakeY >= canvas.height) snakeY = 0;
+
+            let newHead = { x: snakeX, y: snakeY };
+
+            if (snakeX == food.x && snakeY == food.y) {
+                score++;
+                document.getElementById("scoreBoard").innerText = "Score: " + score;
+                food = {
+                    x: Math.floor(Math.random() * 20) * box,
+                    y: Math.floor(Math.random() * 20) * box
+                };
+            } else {
+                snake.pop(); 
+            }
+
+            if (collision(newHead, snake)) {
+                clearInterval(game);
+                alert("Game Over! Aapka Score: " + score);
+                location.reload(); 
+            }
+
+            snake.unshift(newHead);
+        }
+
+        // Speed ko 120 se badhakar 220 kar diya hai (Slowing down the interval)
+        let game = setInterval(draw, 220); 
+    </script>
+</body>
+</html>
